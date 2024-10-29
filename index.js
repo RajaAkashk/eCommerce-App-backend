@@ -86,7 +86,7 @@ app.get("/products/:productId", async (req, res) => {
     if (filteredProduct) {
       res.status(200).json({
         message: "Successfully found product:",
-        product: filteredProduct,
+        products: filteredProduct,
       });
     } else {
       res.status(404).json({ error: "Failed to fetch product by id." });
@@ -114,7 +114,7 @@ app.get("/products/category/:productCategory", async (req, res) => {
     if (products.length != 0) {
       res
         .status(200)
-        .json({ message: "Found data successfully.", data: products });
+        .json({ message: "Found data successfully.", products: products });
     } else {
       res.status(404).json({ error: "Error in fetching data." });
     }
