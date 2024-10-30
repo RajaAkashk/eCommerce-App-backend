@@ -96,7 +96,7 @@ app.get("/products/:productId", async (req, res) => {
   }
 });
 
-// to get product by categoty
+// to get product by category
 async function productsByCategory(productCategory) {
   try {
     const allProductsByCategory = await ProductsList.find({
@@ -122,6 +122,33 @@ app.get("/products/category/:productCategory", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch data.", error });
   }
 });
+
+
+
+
+// to get product by rating
+async function productsByRating (productRating) {
+try{
+const filteredProducts = await ProductsList.find({rating:productRating})
+return filteredProducts
+}catch(error){
+  console.log("Error in Connecting to database.",error)
+}
+}
+app.get("/products/rating/:productRating", async (req,res) => {
+  try{
+const products = productsByRating(req.params.productRating);
+if(products.length != 0){
+  res.status(200).json({message:"Successfully fetched products by rating.", products:products})
+}else{
+  res.status(404).json({error:"Error in fetching products by rating."})
+}
+  }catch(error){
+    res.status(500).json({error:"Failed to get products data.",error})
+  }
+})
+
+
 
 const PORT = 3000;
 app.listen(PORT, () => {
