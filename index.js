@@ -1,6 +1,8 @@
 const { initializeDatabase } = require("./db/db.connect");
 const ProductsList = require("./Models/products.Models");
 
+const WishList = require("./Models/wishList.Models");
+
 initializeDatabase();
 
 const express = require("express");
@@ -145,6 +147,68 @@ app.get("/products/rating/:productRating", async (req, res) => {
     }
   } catch (error) {
     res.status(500).json({ error: "Failed to get products data.", error });
+  }
+});
+
+//***************** Add products to wishlist *****************
+async function addProductsToWishlist(product) {
+  try {
+    const newWishlistProduct = new WishList({
+      productId: product._id,
+      productname: product.name,
+      productImage: product.productImg,
+      price: product.price,
+      wishList: true,
+    });
+    const savedWishlistProduct = await newWishlistProduct.save();
+    return savedWishlistProduct;
+  } catch (error) {
+    console.log("Problem in adding product to wishlist", error);
+  }
+}
+
+app.post("/products/wishlist", async (req, res) => {
+  try {
+    const wishlistProduct = await addProductsToWishlist(req.body);
+    if (wishlistProduct) {
+      res.status(201).json({
+        message: "New wishlist product added successfully.",
+        products: wishlistProduct,
+      });
+    } else {
+      res.status(404).json({ error: "Error in adding new wishlist product." });
+    }
+  } catch (error) {
+    res
+      .status(500)
+      .json({ error: "Failed to add product to wishlist.", error });
+  }
+});
+
+//***************** Get wishlist products  *****************
+async function getWishlistProducts() {
+  try {
+    const wishlistProducts = await WishList.find();
+    return wishlistProducts;
+  } catch (error) {
+    console.log("Problem in getting product to wishlist", error);
+  }
+}
+
+app.get("/wishlist/products", async (req, res) => {
+  try {
+    const wishlistProduct = await getWishlistProducts();
+    if (wishlistProduct) {
+      res
+        .status(201)
+        .json({ message: "successfully getting wishlist products.", products:wishlistProduct });
+    } else {
+      res.status(404).json({ error: "Error in getting wishlist product." });
+    }
+  } catch (error) {
+    res
+      .status(500)
+      .json({ error: "Failed in getting wishlist products.", error });
   }
 });
 
