@@ -1,7 +1,7 @@
 const { initializeDatabase } = require("./db/db.connect");
 const ProductsList = require("./Models/products.Models");
 
-const WishList = require("./Models/wishList.Models");
+const WishListProducts = require("./Models/wishList.Models");
 
 initializeDatabase();
 
@@ -153,7 +153,7 @@ app.get("/products/rating/:productRating", async (req, res) => {
 //***************** Add products to wishlist *****************
 async function addProductsToWishlist(product) {
   try {
-    const newWishlistProduct = new WishList({
+    const newWishlistProduct = new WishListProducts({
       productId: product._id,
       productname: product.name,
       productImage: product.productImg,
@@ -188,7 +188,7 @@ app.post("/products/wishlist", async (req, res) => {
 //***************** Get wishlist products  *****************
 async function getWishlistProducts() {
   try {
-    const wishlistProducts = await WishList.find();
+    const wishlistProducts = await WishListProducts.find();
     return wishlistProducts;
   } catch (error) {
     console.log("Problem in getting product to wishlist", error);
@@ -199,9 +199,10 @@ app.get("/wishlist/products", async (req, res) => {
   try {
     const wishlistProduct = await getWishlistProducts();
     if (wishlistProduct) {
-      res
-        .status(201)
-        .json({ message: "successfully getting wishlist products.", products:wishlistProduct });
+      res.status(201).json({
+        message: "successfully getting wishlist products.",
+        products: wishlistProduct,
+      });
     } else {
       res.status(404).json({ error: "Error in getting wishlist product." });
     }
@@ -209,6 +210,36 @@ app.get("/wishlist/products", async (req, res) => {
     res
       .status(500)
       .json({ error: "Failed in getting wishlist products.", error });
+  }
+});
+
+//***************** Delete wishlist products  *****************
+async function deleteWishlistProduct(name) {
+  try {
+    const deletedProduct = await WishListProducts.findOneAndDelete({
+      productname: name,
+    });
+    return deletedProduct;
+  } catch (error) {
+    console.log("Failed to delete from database.", error);
+  }
+}
+
+app.delete("/product/delete/:name", async (req, res) => {
+  console.log("Attempting to delete product:", req.params.name); // Log the product name
+
+  try {
+    const productDelete = await deleteWishlistProduct(req.params.name);
+    if (productDelete) {
+      res.status(200).json({ message: "Successfully deleted product." });
+    } else {
+      res.status(404).json({ error: "Product not found or already deleted." });
+    }
+  } catch (error) {
+    console.error("Error in deleting product:", error);
+    res
+      .status(500)
+      .json({ error: "Error in deleting product.", details: error.message });
   }
 });
 
