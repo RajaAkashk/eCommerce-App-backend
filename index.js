@@ -156,6 +156,8 @@ async function addProductsToWishlist(product) {
     const newWishlistProduct = new WishListProducts({
       productId: product._id,
       productname: product.name,
+      category:product.category,
+      quantity:product.quantity,
       productImage: product.productImg,
       price: product.price,
       wishList: true,

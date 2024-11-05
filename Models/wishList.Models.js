@@ -9,6 +9,16 @@ const wishlistSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  category: {
+    type: String,
+    required: true,
+    enum: ["Men", "Women", "Kids"],
+  },
+  quantity: {
+    type: Number,
+    required: true,
+    default: 1,
+  },
   wishList: {
     type: Boolean,
     default: true,
