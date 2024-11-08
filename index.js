@@ -3,6 +3,8 @@ const ProductsList = require("./Models/products.Models");
 
 const WishListProducts = require("./Models/wishList.Models");
 
+const CartProducts = require("./Models/AddToCart.Models");
+
 initializeDatabase();
 
 const express = require("express");
@@ -154,13 +156,7 @@ app.get("/products/rating/:productRating", async (req, res) => {
 async function addProductsToWishlist(product) {
   try {
     const newWishlistProduct = new WishListProducts({
-      productId: product._id,
-      productname: product.name,
-      category:product.category,
-      quantity:product.quantity,
-      productImage: product.productImg,
-      price: product.price,
-      wishList: true,
+      productInfo: product._id,
     });
     const savedWishlistProduct = await newWishlistProduct.save();
     return savedWishlistProduct;
@@ -190,7 +186,9 @@ app.post("/products/wishlist", async (req, res) => {
 //***************** Get wishlist products  *****************
 async function getWishlistProducts() {
   try {
-    const wishlistProducts = await WishListProducts.find();
+    const wishlistProducts = await WishListProducts.find().populate(
+      "productInfo"
+    );
     return wishlistProducts;
   } catch (error) {
     console.log("Problem in getting product to wishlist", error);
@@ -216,10 +214,10 @@ app.get("/wishlist/products", async (req, res) => {
 });
 
 //***************** Delete wishlist products  *****************
-async function deleteWishlistProduct(name) {
+async function deleteWishlistProduct(productId) {
   try {
     const deletedProduct = await WishListProducts.findOneAndDelete({
-      productname: name,
+      productInfo: productId,
     });
     return deletedProduct;
   } catch (error) {
@@ -227,11 +225,10 @@ async function deleteWishlistProduct(name) {
   }
 }
 
-app.delete("/product/delete/:name", async (req, res) => {
-  console.log("Attempting to delete product:", req.params.name); // Log the product name
-
+app.delete("/product/delete/:productId", async (req, res) => {
+  console.log("Attempting to delete product:", req.params.productId);
   try {
-    const productDelete = await deleteWishlistProduct(req.params.name);
+    const productDelete = await deleteWishlistProduct(req.params.productId);
     if (productDelete) {
       res.status(200).json({ message: "Successfully deleted product." });
     } else {
@@ -244,6 +241,132 @@ app.delete("/product/delete/:name", async (req, res) => {
       .json({ error: "Error in deleting product.", details: error.message });
   }
 });
+
+//***************** Add products to Cart *****************
+async function addProductsToCart(product) {
+  try {
+    const newCartProduct = new CartProducts({
+      productInfo: product._id,
+      productQuantity: product.productQuantity,
+      productSize: product.productSize,
+    });
+    const savedCartProduct = await newCartProduct.save();
+    return savedCartProduct;
+  } catch (error) {
+    console.log("Problem in adding product to wishlist", error);
+  }
+}
+
+app.post("/products/add/cart", async (req, res) => {
+  try {
+    const cartProduct = await addProductsToCart(req.body);
+    if (cartProduct) {
+      res.status(201).json({
+        message: "New product added to cart successfully.",
+        products: cartProduct,
+      });
+    } else {
+      res.status(404).json({ error: "Error in adding new product to cart." });
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Failed to add product to cart.", error });
+  }
+});
+
+//***************** Get Carts products  *****************
+async function getCartProducts() {
+  try {
+    const cartProducts = await CartProducts.find().populate("productInfo");
+    return cartProducts;
+  } catch (error) {
+    console.log("Problem in getting product from cart", error);
+  }
+}
+
+app.get("/cart/get/products", async (req, res) => {
+  try {
+    const cartProduct = await getCartProducts();
+    if (cartProduct) {
+      res.status(201).json({
+        message: "successfully getting cart products.",
+        products: cartProduct,
+      });
+    } else {
+      res.status(404).json({ error: "Error in getting cart product." });
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Failed in getting cart products.", error });
+  }
+});
+
+//***************** Delete Cart products  *****************
+async function deleteCartProduct(productId) {
+  try {
+    const deletedProduct = await CartProducts.findOneAndDelete(
+      {
+        productInfo: productId,
+      },
+      { new: true }
+    );
+    return deletedProduct;
+  } catch (error) {
+    console.log("Failed to delete from cart.", error);
+  }
+}
+
+app.delete("/product/cart/delete/:productId", async (req, res) => {
+  console.log("Attempting to delete product:", req.params.productId); 
+  try {
+    const productDelete = await deleteCartProduct(req.params.productId);
+    if (productDelete) {
+      res
+        .status(200)
+        .json({ message: "Successfully deleted product from cart." });
+    } else {
+      res.status(404).json({ error: "Product not found or already deleted." });
+    }
+  } catch (error) {
+    console.error("Error in deleting product:", error);
+    res
+      .status(500)
+      .json({ error: "Error in deleting product.", details: error.message });
+  }
+});
+
+//******************** Update Cart Product ********************
+async function updateCartProduct(productName, updatedValue) {
+  try {
+    const updatedData = await CartProducts.findOneAndUpdate(
+      { productName: productName },
+      { quantity: updatedValue },
+      { new: true }
+    );
+    return updatedData;
+  } catch (error) {
+    console.log("Failed to updated cart data.", error);
+  }
+}
+
+app.post(
+  "/cart/product/update/:productName/:updatedValue",
+  async (req, res) => {
+    try {
+      const { productName, updatedValue } = req.params;
+      const updatedProduct = await updateCartProduct(productName, updatedValue);
+      if (updatedProduct) {
+        res.status(200).json({
+          message: "Successfully updated product.",
+          products: updatedProduct,
+        });
+      } else {
+        res.status(404).json({ error: "Cannot update Product." });
+      }
+    } catch (error) {
+      console.log("Error in updating cart product.", error);
+      res.status(500).json({ error: "Failed to update.", error });
+    }
+  }
+);
 
 const PORT = 3000;
 app.listen(PORT, () => {

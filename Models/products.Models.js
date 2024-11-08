@@ -18,7 +18,8 @@ const ProductsSchema = new mongoose.Schema(
       type: Number,
       required: true,
       default: 1,
-    },
+    }, 
+    // is whislisted add kro 
     rating: {
       type: Number,
       required: true,
