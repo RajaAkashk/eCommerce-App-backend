@@ -316,6 +316,7 @@ async function deleteCartProduct(productId) {
 
 app.delete("/product/cart/delete/:productId", async (req, res) => {
   console.log("Attempting to delete product:", req.params.productId); 
+
   try {
     const productDelete = await deleteCartProduct(req.params.productId);
     if (productDelete) {

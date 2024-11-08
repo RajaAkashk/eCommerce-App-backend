@@ -13,6 +13,7 @@ const AddToCartSchema = new mongoose.Schema({
   productSize: {
     type: String,
     required: true,
+    default: "M",
     enum: ["S", "M", "L", "XL", "XXL"],
   },
 });
