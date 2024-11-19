@@ -37,6 +37,13 @@ const ProductsSchema = new mongoose.Schema(
         enum: ["S", "M", "L", "XL", "XXL"],
       },
     ],
+    selectedSize: 
+      {
+        type: String,
+        default:"M",
+        enum: ["S", "M", "L", "XL", "XXL"],
+      },
+    
     productImg: {
       type: String,
       required: true,
