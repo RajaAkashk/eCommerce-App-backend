@@ -247,8 +247,8 @@ async function addProductsToCart(product) {
   try {
     const newCartProduct = new CartProducts({
       productInfo: product._id,
-      productQuantity: product.productQuantity,
-      productSize: product.productSize,
+      // productQuantity: product.productQuantity,
+      // productSize: product.productSize,
     });
     const savedCartProduct = await newCartProduct.save();
     return savedCartProduct;
@@ -335,10 +335,10 @@ app.delete("/product/cart/delete/:productId", async (req, res) => {
 });
 
 //******************** Update Cart Product ********************
-async function updateCartProduct(productName, updatedValue) {
+async function updateCartProduct(productId, updatedValue) {
   try {
     const updatedData = await CartProducts.findOneAndUpdate(
-      { productName: productName },
+      { productInfo: productId },
       { quantity: updatedValue },
       { new: true }
     );
