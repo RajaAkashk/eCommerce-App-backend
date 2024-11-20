@@ -315,7 +315,7 @@ async function deleteCartProduct(productId) {
 }
 
 app.delete("/product/cart/delete/:productId", async (req, res) => {
-  console.log("Attempting to delete product:", req.params.productId); 
+  console.log("Attempting to delete product:", req.params.productId);
 
   try {
     const productDelete = await deleteCartProduct(req.params.productId);
@@ -333,41 +333,49 @@ app.delete("/product/cart/delete/:productId", async (req, res) => {
       .json({ error: "Error in deleting product.", details: error.message });
   }
 });
-
 //******************** Update Cart Product ********************
-async function updateCartProduct(productId, updatedValue) {
+
+// Abhi git me add nhi hai First test it on postman.
+
+async function updateCartProduct(productId, updatedValues) {
   try {
-    const updatedData = await CartProducts.findOneAndUpdate(
-      { productInfo: productId },
-      { quantity: updatedValue },
-      { new: true }
+    const updatedData = await ProductsList.findOneAndUpdate(
+      { _id: productId }, // Assuming productInfo contains product details
+      { $set: updatedValues }, // Update the fields with the new values from the request
+      { new: true } // Return the updated document
     );
     return updatedData;
   } catch (error) {
-    console.log("Failed to updated cart data.", error);
+    console.log("Failed to update cart data.", error);
   }
 }
 
-app.post(
-  "/cart/product/update/:productName/:updatedValue",
-  async (req, res) => {
-    try {
-      const { productName, updatedValue } = req.params;
-      const updatedProduct = await updateCartProduct(productName, updatedValue);
-      if (updatedProduct) {
-        res.status(200).json({
-          message: "Successfully updated product.",
-          products: updatedProduct,
-        });
-      } else {
-        res.status(404).json({ error: "Cannot update Product." });
-      }
-    } catch (error) {
-      console.log("Error in updating cart product.", error);
-      res.status(500).json({ error: "Failed to update.", error });
+//******************** Route for Updating Cart Product ********************
+
+app.post("/cart/product/update/:productId", async (req, res) => {
+  const {productId}  = req.params;
+  const updatedValues = req.body;
+
+  try {
+    if (!updatedValues || Object.keys(updatedValues).length === 0) {
+      return res.status(400).json({ error: "No update data provided." });
     }
+    const updatedProduct = await updateCartProduct(productId, updatedValues);
+    if (updatedProduct) {
+      res.status(200).json({
+        message: "Successfully updated product.",
+        products: updatedProduct,
+      });
+    } else {
+      res.status(404).json({ error: "Product not found or update failed.",error });
+    }
+  } catch (error) {
+    console.log("Error in updating cart product.", error);
+    res
+      .status(500)
+      .json({ error: "Failed to update product.",error });
   }
-);
+});
 
 const PORT = 3000;
 app.listen(PORT, () => {
