@@ -5,6 +5,8 @@ const WishListProducts = require("./Models/wishList.Models");
 
 const CartProducts = require("./Models/AddToCart.Models");
 
+const UserAddress = require("./Models/AddAddress.Models");
+
 initializeDatabase();
 
 const express = require("express");
@@ -350,10 +352,8 @@ async function updateCartProduct(productId, updatedValues) {
   }
 }
 
-//******************** Route for Updating Cart Product ********************
-
 app.post("/cart/product/update/:productId", async (req, res) => {
-  const {productId}  = req.params;
+  const { productId } = req.params;
   const updatedValues = req.body;
 
   try {
@@ -367,13 +367,92 @@ app.post("/cart/product/update/:productId", async (req, res) => {
         products: updatedProduct,
       });
     } else {
-      res.status(404).json({ error: "Product not found or update failed.",error });
+      res
+        .status(404)
+        .json({ error: "Product not found or update failed.", error });
     }
   } catch (error) {
     console.log("Error in updating cart product.", error);
-    res
-      .status(500)
-      .json({ error: "Failed to update product.",error });
+    res.status(500).json({ error: "Failed to update product.", error });
+  }
+});
+
+// Add User Address
+async function addUserAddress(address) {
+  try {
+    const newAddress = new UserAddress(address);
+    const savedAddress = await newAddress.save();
+    return savedAddress;
+  } catch (error) {
+    console.log("Error in adding Address to database.", error);
+  }
+}
+
+app.post("/user/address/new", async (req, res) => {
+  try {
+    const newAddress = await addUserAddress(req.body);
+    if (newAddress) {
+      res
+        .status(200)
+        .json({ message: "New address added successfully.", newAddress });
+    } else {
+      res.status(404).json({ error: "Failed to add address." });
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Error in adding new address.", error });
+  }
+});
+
+// get all User Address
+async function getAllAddress() {
+  try {
+    const allAddress = await UserAddress.find();
+    return allAddress;
+  } catch (error) {
+    console.log("Error in connecting to database and get address.", error);
+  }
+}
+
+app.get("/get/user/all/address", async (req, res) => {
+  try {
+    const userAddress = await getAllAddress();
+    if (userAddress) {
+      res.status(200).json({
+        message: "Successfully getting address data: ",
+        data: userAddress,
+      });
+    } else {
+      res.status(404).json({ error: "Failed to get address." });
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Error getting to database.", error });
+  }
+});
+
+// delete address
+async function deleteUserAddress(addressId) {
+  try {
+    const deletedAddress = await UserAddress.findByIdAndDelete({
+      _id: addressId,
+    });
+    return deletedAddress;
+  } catch (error) {
+    console.log("Failed to delete from database.", error);
+  }
+}
+
+app.delete("/user/address/delete/:addressId", async (req, res) => {
+  console.log("Attempting to delete product:", req.params.addressId);
+  try {
+    const deletedAddress = await deleteUserAddress(req.params.addressId);
+    if (deletedAddress) {
+      res.status(200).json({ message: "Successfully deleted address." });
+    } else {
+      res.status(404).json({ error: "Address not found." });
+    }
+  } catch (error) {
+    console.error("Error in deleting address:", error);
+    res.status(500).json({ error: "Error in deleting address." });
   }
 });
 
