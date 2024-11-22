@@ -441,7 +441,7 @@ async function deleteUserAddress(addressId) {
   }
 }
 
-app.delete("/user/address/delete/:addressId", async (req, res) => {
+app.delete("/user/info/address/delete/:addressId", async (req, res) => {
   console.log("Attempting to delete product:", req.params.addressId);
   try {
     const deletedAddress = await deleteUserAddress(req.params.addressId);
