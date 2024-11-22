@@ -17,18 +17,19 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  profile: {
+    type: String,
+  },
   phoneNumber: {
     type: Number,
     required: true,
   },
-  address: [
-    {
-      type: String,
-      required: true,
-    },
-  ],
+  address: {
+    type: String,
+    required: true,
+  },
 });
 
-const UserDetail = mongoose.Model("UserDetail", UserSchema);
+const UserDetail = mongoose.model("UserDetail", UserSchema);
 
 module.exports = UserDetail;

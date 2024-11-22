@@ -7,6 +7,8 @@ const CartProducts = require("./Models/AddToCart.Models");
 
 const UserAddress = require("./Models/AddAddress.Models");
 
+const UserDetail = require("./Models/User.Models");
+
 initializeDatabase();
 
 const express = require("express");
@@ -335,10 +337,8 @@ app.delete("/product/cart/delete/:productId", async (req, res) => {
       .json({ error: "Error in deleting product.", details: error.message });
   }
 });
+
 //******************** Update Cart Product ********************
-
-// Abhi git me add nhi hai First test it on postman.
-
 async function updateCartProduct(productId, updatedValues) {
   try {
     const updatedData = await ProductsList.findOneAndUpdate(
@@ -453,6 +453,86 @@ app.delete("/user/address/delete/:addressId", async (req, res) => {
   } catch (error) {
     console.error("Error in deleting address:", error);
     res.status(500).json({ error: "Error in deleting address." });
+  }
+});
+
+// Add User Info
+async function addUserInfo(info) {
+  try {
+    const user = new UserDetail(info);
+    const savedUser = await user.save();
+    return savedUser;
+  } catch (error) {
+    console.log("Error in adding User to database.", error);
+  }
+}
+
+app.post("/add/new/user", async (req, res) => {
+  try {
+    const user = await addUserInfo(req.body);
+    if (user) {
+      res.status(200).json({ message: "New User added successfully.", user });
+    } else {
+      res.status(404).json({ error: "Failed to add User." });
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Error in adding new User.", error });
+  }
+});
+
+//Update User Info
+async function updateUserInfo(userId, updatedInfo) {
+  try {
+    const updatedUser = await UserDetail.findByIdAndUpdate(
+      userId,
+      updatedInfo,
+      { new: true }
+    );
+    return updatedUser;
+  } catch (error) {
+    console.log("Error in updating User in the database.", error);
+    throw error;
+  }
+}
+
+app.post("/update/user/:id", async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const updatedData = req.body;
+    // Call the update function
+    const updatedUser = await updateUserInfo(userId, updatedData);
+    if (updatedUser) {
+      res
+        .status(200)
+        .json({ message: "User updated successfully.", updatedUser });
+    } else {
+      res.status(404).json({ error: "User not found or update failed." });
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Error updating user.", error });
+  }
+});
+
+// Get User Info
+async function getUserInfo(info) {
+  try {
+    const user = await UserDetail.find();
+    return user;
+  } catch (error) {
+    console.log("Error in getting User.", error);
+  }
+}
+
+app.get("/get/user/info", async (req, res) => {
+  try {
+    const user = await getUserInfo();
+    if (user) {
+      res.status(200).json({ message: "New User added successfully.", user });
+    } else {
+      res.status(404).json({ error: "Failed to get User info." });
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Error in getting User info.", error });
   }
 });
 
