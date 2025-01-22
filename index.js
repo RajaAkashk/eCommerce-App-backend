@@ -338,6 +338,16 @@ app.delete("/product/cart/delete/:productId", async (req, res) => {
   }
 });
 
+//******************** delete all cart products ********************
+app.delete("/cart/products/delete/all", async (req, res) => {
+  try {
+    await CartProducts.deleteMany({});
+    res.status(200).json({ message: "Cart cleared successfully." });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to clear the cart." });
+  }
+});
+
 //******************** Update Cart Product ********************
 async function updateCartProduct(productId, updatedValues) {
   try {
