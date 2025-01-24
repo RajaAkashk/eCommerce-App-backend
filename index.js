@@ -556,7 +556,7 @@ app.post("/cart/order/checkout", async (req, res) => {
       return res.status(400).json({ message: "cart is empty" });
     }
 
-    const totalAmount = 0;
+    let totalAmount = 0;
     const products = cartItems.map((item) => {
       const product = item.productInfo;
       totalAmount += product.price * product.quantity;
