@@ -9,6 +9,8 @@ const UserAddress = require("./Models/AddAddress.Models");
 
 const UserDetail = require("./Models/User.Models");
 
+const OrderHistory = require("./Models/OrderHistory.Model");
+
 initializeDatabase();
 
 const express = require("express");
@@ -16,6 +18,7 @@ const app = express();
 app.use(express.json());
 
 const cors = require("cors");
+const Cart_Products = require("./Models/AddToCart.Models");
 const corsOptions = {
   origin: "*",
   credentials: true,
@@ -251,8 +254,6 @@ async function addProductsToCart(product) {
   try {
     const newCartProduct = new CartProducts({
       productInfo: product._id,
-      // productQuantity: product.productQuantity,
-      // productSize: product.productSize,
     });
     const savedCartProduct = await newCartProduct.save();
     return savedCartProduct;
@@ -543,6 +544,49 @@ app.get("/get/user/info", async (req, res) => {
     }
   } catch (error) {
     res.status(500).json({ error: "Error in getting User info.", error });
+  }
+});
+
+// Checkout api for making order history
+app.post("/cart/order/checkout", async (req, res) => {
+  try {
+    const cartItems = await Cart_Products.find().populate("productInfo");
+
+    if (cartItems.length === 0) {
+      return res.status(400).json({ message: "cart is empty" });
+    }
+
+    const totalAmount = 0;
+    const products = cartItems.map((item) => {
+      const product = item.productInfo;
+      totalAmount += product.price * product.quantity;
+      return {
+        product: product._id,
+      };
+    });
+
+    const newOrder = new OrderHistory({
+      productInfo: products,
+      totalAmount,
+    });
+    const savedNewOrder = await newOrder.save();
+
+    res
+      .status(200)
+      .json({ message: "Successfully checkout", orders: savedNewOrder });
+  } catch (error) {
+    console.error("Error occurred during checkout: ", error);
+    res.status(404).json({ message: "Failed to get order history." });
+  }
+});
+
+app.get("/order/history", async (req, res) => {
+  try {
+    const orders = await OrderHistory.find().populate("productInfo.product");
+    res.status(200).json({ orders });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Could not fetch order history." });
   }
 });
 
