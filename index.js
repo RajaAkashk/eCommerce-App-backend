@@ -583,7 +583,7 @@ app.post("/cart/order/checkout", async (req, res) => {
 app.get("/order/history", async (req, res) => {
   try {
     const orders = await OrderHistory.find().populate("productInfo.product");
-    res.status(200).json({ orders });
+    res.status(200).json({ orders: orders });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Could not fetch order history." });
