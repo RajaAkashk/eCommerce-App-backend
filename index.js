@@ -550,6 +550,10 @@ app.get("/get/user/info", async (req, res) => {
 // Checkout api for making order history
 app.post("/cart/order/checkout", async (req, res) => {
   try {
+    const { address } = req.body;
+    if (!address) {
+      return res.status(400).json({ message: "Address is required." });
+    }
     const cartItems = await Cart_Products.find().populate("productInfo");
 
     if (cartItems.length === 0) {
@@ -568,6 +572,7 @@ app.post("/cart/order/checkout", async (req, res) => {
     const newOrder = new OrderHistory({
       productInfo: products,
       totalAmount,
+      address,
     });
     const savedNewOrder = await newOrder.save();
 
